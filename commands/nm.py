@@ -5,7 +5,7 @@ from Crypto.Cipher import AES
 
 name = "nm"
 description = "Decrypts the provided encrypted content."
-admin_bot = False  # Set to True if this command requires admin access
+admin_bot = True  # Set to True if this command requires admin access
 
 # AES decryption function using ECB mode
 def decrypt_aes_ecb_128(ciphertext, key):
