@@ -1,16 +1,19 @@
 from flask import Flask, request, send_from_directory
 from api.sendMessage import send_message
 from api.adminCheck import is_admin
-from commands import hi  # Updated import path
 import os
+import importlib
+import glob
 
 app = Flask(__name__)
 VERIFY_TOKEN = "jubiar"
 
-# Load commands dynamically (add each new command here)
-commands = {
-    hi.name: hi
-}
+# Dynamically load all command modules in the commands folder
+commands = {}
+for command_file in glob.glob("commands/*.py"):
+    command_name = os.path.basename(command_file)[:-3]
+    command_module = importlib.import_module(f"commands.{command_name}")
+    commands[command_module.name] = command_module
 
 @app.route('/')
 def index():
@@ -18,7 +21,6 @@ def index():
 
 @app.route('/webhook', methods=['GET'])
 def verify():
-    # Verification route
     token = request.args.get("hub.verify_token")
     if request.args.get("hub.mode") == "subscribe" and token == VERIFY_TOKEN:
         return request.args.get("hub.challenge")
@@ -37,8 +39,7 @@ def webhook():
                     command = commands.get(command_name)
 
                     if command:
-                        # Check for admin rights if the command requires it
-                        if getattr(command, 'admin_bot', False) and not is_admin(sender_id):
+                        if command.admin_bot and not is_admin(sender_id):
                             send_message(sender_id, {"text": "⚠️ You do not have permission to use this command."})
                         else:
                             command.execute(sender_id, message_text)
