@@ -2,7 +2,6 @@ from flask import Flask, request
 from api.sendMessage import send_message
 from api.adminCheck import is_admin
 from commands import hi  # Updated import path
-import asyncio
 
 app = Flask(__name__)
 VERIFY_TOKEN = "jubiar"
@@ -21,7 +20,7 @@ def verify():
     return "Verification failed", 403
 
 @app.route('/webhook', methods=['POST'])
-async def webhook():
+def webhook():
     body = request.json
     if body['object'] == 'page':
         for entry in body['entry']:
@@ -35,10 +34,10 @@ async def webhook():
                     if command:
                         # Check for admin rights if the command requires it
                         if getattr(command, 'admin_bot', False) and not is_admin(sender_id):
-                            await send_message(sender_id, {"text": "⚠️ You do not have permission to use this command."})
+                            send_message(sender_id, {"text": "⚠️ You do not have permission to use this command."})
                         else:
-                            await command.execute(sender_id, message_text)
+                            command.execute(sender_id, message_text)
                     else:
-                        await send_message(sender_id, {"text": "Unrecognized command. Type 'help' for available options."})
+                        send_message(sender_id, {"text": "Unrecognized command. Type 'help' for available options."})
         return "EVENT_RECEIVED", 200
     return "Not Found", 404
