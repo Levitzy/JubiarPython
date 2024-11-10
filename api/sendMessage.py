@@ -12,7 +12,7 @@ def split_message(text, max_length=2000):
     return [text[i:i + max_length] for i in range(0, len(text), max_length)]
 
 def send_typing_indicator(recipient_id, action):
-    url = f"https://graph.facebook.com/v11.0/me/messages?access_token={PAGE_ACCESS_TOKEN}"
+    url = f"https://graph.facebook.com/v21.0/me/messages?access_token={PAGE_ACCESS_TOKEN}"
     response = requests.post(url, json={
         "recipient": {"id": recipient_id},
         "sender_action": action
