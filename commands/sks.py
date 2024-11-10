@@ -1,5 +1,6 @@
 import os
 import json
+import base64
 from api.sendMessage import send_message
 from Crypto.Cipher import AES
 from hashlib import md5
@@ -68,14 +69,25 @@ def aes_decrypt(data, key, iv):
 def md5_crypt(data):
     return md5(data.encode('utf-8')).hexdigest()
 
+def decode_base64_or_hex(data):
+    try:
+        # Try decoding as hex
+        return bytes.fromhex(data)
+    except ValueError:
+        # If hex fails, try decoding as Base64
+        return base64.b64decode(data)
+
 def decrypt_data(encrypted_data, version):
     data_part, iv_part = encrypted_data.split(".")
-    iv = bytes.fromhex(iv_part)
+    
+    # Attempt decoding in either hex or base64
+    data = decode_base64_or_hex(data_part)
+    iv = decode_base64_or_hex(iv_part)
     
     for key in config_keys:
         try:
             key_md5 = md5_crypt(f"{key} {version}")
-            decrypted_data = aes_decrypt(bytes.fromhex(data_part), key_md5, iv)
+            decrypted_data = aes_decrypt(data, key_md5.encode(), iv)
             if decrypted_data:
                 return decrypted_data
         except Exception as e:
