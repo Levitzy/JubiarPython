@@ -1,7 +1,7 @@
 from flask import Flask, request
 from api.sendMessage import send_message
 from api.adminCheck import is_admin
-from cmd import hi  # Import each command module here
+from commands import hi  # Updated import path
 
 app = Flask(__name__)
 VERIFY_TOKEN = "jubiar"
