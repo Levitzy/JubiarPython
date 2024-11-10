@@ -13,19 +13,23 @@ def decrypt_aes_ecb_128(ciphertext, key):
     decrypted = cipher.decrypt(ciphertext)
     return decrypted
 
-# Function to parse configuration data from JSON
+# Function to parse configuration data from JSON, excluding "note" keys
 def parse_config(data):
     result = []
 
     for key, value in data.items():
+        if key.lower() == "note":
+            continue  # Skip any "note" keys
         if isinstance(value, dict):
             for sub_key, sub_value in value.items():
-                result.append(f"{sub_key.lower()} {sub_value}")
+                if sub_key.lower() != "note":  # Exclude nested "note" keys
+                    result.append(f"{sub_key.lower()} {sub_value}")
         elif isinstance(value, list):
             for item in value:
                 if isinstance(item, dict):
                     for sub_key, sub_value in item.items():
-                        result.append(f"{sub_key.lower()} {sub_value}")
+                        if sub_key.lower() != "note":
+                            result.append(f"{sub_key.lower()} {sub_value}")
                 else:
                     result.append(f"{key.lower()} {item}")
         else:
