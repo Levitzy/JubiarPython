@@ -129,7 +129,7 @@ def execute(sender_id, message_text):
                 json_data = json.loads(decrypted_data)
                 response_text = f"🎉 **Decrypted Content**:\n{pretty_print_json(json_data).strip()}"
             except json.JSONDecodeError:
-                # If not JSON, send as plain text
+                # If not JSON, send as plain text with line breaks
                 response_text = f"🎉 **Decrypted Content** (Plain Text):\n{decrypted_data.strip()}"
                 
             send_message(sender_id, {"text": response_text})
