@@ -77,6 +77,11 @@ def decode_base64_or_hex(data):
         # If hex fails, try decoding as Base64
         return base64.b64decode(data)
 
+def clean_decrypted_data(decrypted_data):
+    """ Clean up decrypted data to ensure valid JSON format """
+    # Strip any leading or trailing whitespace or non-JSON characters
+    return decrypted_data.strip()
+
 def decrypt_data(encrypted_data, version):
     data_part, iv_part = encrypted_data.split(".")
     
@@ -89,7 +94,8 @@ def decrypt_data(encrypted_data, version):
             key_md5 = md5_crypt(f"{key} {version}")
             decrypted_data = aes_decrypt(data, key_md5.encode(), iv)
             if decrypted_data:
-                return decrypted_data
+                cleaned_data = clean_decrypted_data(decrypted_data)
+                return cleaned_data
         except Exception as e:
             print(f"Error with key {key}: {str(e)}")
     return None
@@ -122,18 +128,13 @@ def execute(sender_id, message_text):
         decrypted_data = decrypt_data(config_data['d'], config_data['v'])
         
         if decrypted_data:
-            # Before parsing the decrypted content, let's log it for debugging
-            print(f"Decrypted data: {decrypted_data}")
-            
             try:
-                # Attempt to parse the decrypted data as JSON
-                parsed_data = json.loads(decrypted_data)
-                response_text = f"🎉 Decrypted Content:\n{pretty_print_json(parsed_data).strip()}"
+                # Try to load the decrypted data as JSON
+                json_data = json.loads(decrypted_data)
+                response_text = f"🎉 Decrypted Content:\n{pretty_print_json(json_data).strip()}"
                 send_message(sender_id, {"text": response_text})
-            except json.JSONDecodeError as json_error:
-                # If the decrypted data is not valid JSON, send an error
-                send_message(sender_id, {"text": f"❌ Error: The decrypted data is not valid JSON. {json_error}"})
-        
+            except json.JSONDecodeError:
+                send_message(sender_id, {"text": "❌ Error: The decrypted data is not valid JSON."})
         else:
             send_message(sender_id, {"text": "❌ Error: Decryption failed. No valid key found."})
 
