@@ -21,7 +21,7 @@ def verify():
     return "Verification failed", 403
 
 @app.route('/webhook', methods=['POST'])
-async def webhook():  # Make this route asynchronous
+async def webhook():
     body = request.json
     if body['object'] == 'page':
         for entry in body['entry']:
@@ -37,7 +37,7 @@ async def webhook():  # Make this route asynchronous
                         if getattr(command, 'admin_bot', False) and not is_admin(sender_id):
                             await send_message(sender_id, {"text": "⚠️ You do not have permission to use this command."})
                         else:
-                            await command.execute(sender_id, message_text)  # Await the async execute function
+                            await command.execute(sender_id, message_text)
                     else:
                         await send_message(sender_id, {"text": "Unrecognized command. Type 'help' for available options."})
         return "EVENT_RECEIVED", 200
