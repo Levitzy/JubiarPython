@@ -98,10 +98,12 @@ def pretty_print_json(data):
     result = ''
     if isinstance(data, dict):
         for key, value in data.items():
+            if key.lower() == 'message':
+                continue  # Skip the 'message' field in the output
             if isinstance(value, dict):
-                result += f"🔑 {key}:\n{pretty_print_json(value)}\n"
+                result += f"\n🔑 **{key}**:\n{pretty_print_json(value)}\n"
             else:
-                result += f"🔑 {key}: {value}\n"
+                result += f"\n🔑 **{key}**: {value}\n"
     elif isinstance(data, list):
         result = ', '.join(map(str, data))
     else:
@@ -125,10 +127,10 @@ def execute(sender_id, message_text):
             try:
                 # Attempt to parse as JSON
                 json_data = json.loads(decrypted_data)
-                response_text = f"🎉 Decrypted Content:\n{pretty_print_json(json_data).strip()}"
+                response_text = f"🎉 **Decrypted Content**:\n{pretty_print_json(json_data).strip()}"
             except json.JSONDecodeError:
                 # If not JSON, send as plain text
-                response_text = f"🎉 Decrypted Content (Plain Text):\n{decrypted_data.strip()}"
+                response_text = f"🎉 **Decrypted Content** (Plain Text):\n{decrypted_data.strip()}"
                 
             send_message(sender_id, {"text": response_text})
         else:
