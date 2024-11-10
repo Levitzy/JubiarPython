@@ -1,7 +1,8 @@
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 from api.sendMessage import send_message
 from api.adminCheck import is_admin
 from commands import hi  # Updated import path
+import os
 
 app = Flask(__name__)
 VERIFY_TOKEN = "jubiar"
@@ -10,6 +11,10 @@ VERIFY_TOKEN = "jubiar"
 commands = {
     hi.name: hi
 }
+
+@app.route('/')
+def index():
+    return send_from_directory('site', 'index.html')
 
 @app.route('/webhook', methods=['GET'])
 def verify():
