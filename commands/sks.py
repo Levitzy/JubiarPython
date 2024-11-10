@@ -122,8 +122,18 @@ def execute(sender_id, message_text):
         decrypted_data = decrypt_data(config_data['d'], config_data['v'])
         
         if decrypted_data:
-            response_text = f"🎉 Decrypted Content:\n{pretty_print_json(json.loads(decrypted_data)).strip()}"
-            send_message(sender_id, {"text": response_text})
+            # Before parsing the decrypted content, let's log it for debugging
+            print(f"Decrypted data: {decrypted_data}")
+            
+            try:
+                # Attempt to parse the decrypted data as JSON
+                parsed_data = json.loads(decrypted_data)
+                response_text = f"🎉 Decrypted Content:\n{pretty_print_json(parsed_data).strip()}"
+                send_message(sender_id, {"text": response_text})
+            except json.JSONDecodeError as json_error:
+                # If the decrypted data is not valid JSON, send an error
+                send_message(sender_id, {"text": f"❌ Error: The decrypted data is not valid JSON. {json_error}"})
+        
         else:
             send_message(sender_id, {"text": "❌ Error: Decryption failed. No valid key found."})
 
