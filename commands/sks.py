@@ -77,11 +77,6 @@ def decode_base64_or_hex(data):
         # If hex fails, try decoding as Base64
         return base64.b64decode(data)
 
-def clean_decrypted_data(decrypted_data):
-    """ Clean up decrypted data to ensure valid JSON format """
-    # Strip any leading or trailing whitespace or non-JSON characters
-    return decrypted_data.strip()
-
 def decrypt_data(encrypted_data, version):
     data_part, iv_part = encrypted_data.split(".")
     
@@ -94,8 +89,7 @@ def decrypt_data(encrypted_data, version):
             key_md5 = md5_crypt(f"{key} {version}")
             decrypted_data = aes_decrypt(data, key_md5.encode(), iv)
             if decrypted_data:
-                cleaned_data = clean_decrypted_data(decrypted_data)
-                return cleaned_data
+                return decrypted_data
         except Exception as e:
             print(f"Error with key {key}: {str(e)}")
     return None
@@ -129,12 +123,14 @@ def execute(sender_id, message_text):
         
         if decrypted_data:
             try:
-                # Try to load the decrypted data as JSON
+                # Attempt to parse as JSON
                 json_data = json.loads(decrypted_data)
                 response_text = f"🎉 Decrypted Content:\n{pretty_print_json(json_data).strip()}"
-                send_message(sender_id, {"text": response_text})
             except json.JSONDecodeError:
-                send_message(sender_id, {"text": "❌ Error: The decrypted data is not valid JSON."})
+                # If not JSON, send as plain text
+                response_text = f"🎉 Decrypted Content (Plain Text):\n{decrypted_data.strip()}"
+                
+            send_message(sender_id, {"text": response_text})
         else:
             send_message(sender_id, {"text": "❌ Error: Decryption failed. No valid key found."})
 
