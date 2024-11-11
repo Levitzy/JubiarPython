@@ -6,7 +6,7 @@ from base64 import b64decode, b64encode
 
 # Command details
 name = "sks"
-description = "Decrypts user-provided encrypted content directly from input and sends the decrypted message."
+description = "Decrypts user-provided encrypted JSON content directly from input and sends the decrypted message."
 admin_bot = False
 
 # Configuration keys
@@ -73,18 +73,14 @@ def clean_json_data(data):
         raise ValueError("Failed to locate JSON data")
     return data[start:end]
 
-def decrypt_data(data):
-    try:
-        encrypted_part, iv, version = data.split(".")
-        for key in config_keys:
-            try:
-                aes_key = b64encode(md5crypt(key + " " + str(version)).encode()).decode()
-                decrypted_data = aes_decrypt(encrypted_part, aes_key, iv)
-                return clean_json_data(decrypted_data)
-            except Exception:
-                continue
-    except ValueError:
-        raise ValueError("Invalid encrypted content format. Expected format: '<encrypted_part>.<iv>.<version>'")
+def decrypt_data(data, iv, version):
+    for key in config_keys:
+        try:
+            aes_key = b64encode(md5crypt(key + " " + str(version)).encode()).decode()
+            decrypted_data = aes_decrypt(data, aes_key, iv)
+            return clean_json_data(decrypted_data)
+        except Exception:
+            continue
     raise Exception("No valid key found")
 
 def format_output(data):
@@ -107,8 +103,18 @@ def execute(sender_id, message_text):
         # Extract the encrypted content after the command prefix
         encrypted_content = message_text.split(" ", 1)[1]
         
-        # Decrypt the extracted content
-        decrypted_data = decrypt_data(encrypted_content)
+        # Parse the encrypted content as JSON
+        try:
+            content_json = json.loads(encrypted_content)
+            data = content_json['d']
+            version = content_json['v']
+            iv = data.split(".")[1]  # Assume 'iv' is part of 'd'
+            encrypted_part = data.split(".")[0]
+        except (json.JSONDecodeError, KeyError, IndexError) as e:
+            raise ValueError("Invalid input format. Please provide JSON formatted as {\"v\":<version>, \"d\":\"<encrypted_part>.<iv>.<extra>\"}.")
+
+        # Decrypt the data
+        decrypted_data = decrypt_data(encrypted_part, iv, version)
         
         # Parse as JSON after cleaning
         json_data = json.loads(decrypted_data)
