@@ -1,91 +1,86 @@
-import os
 import json
+import os
+from pathlib import Path
 from hashlib import md5
 from Crypto.Cipher import AES
 from base64 import b64decode, b64encode
-from api.sendMessage import send_message  # Assuming send_message is in sendMessage.py
+from api.sendMessage import send_message
 
+# Define command metadata
 name = "sks"
 description = "Decrypts the provided encrypted content using predefined keys."
-admin_bot = True
+admin_bot = True  # Set to True if only admins should use it
 
-# List of keys from the original JavaScript file
+# Keys as in original JavaScript
 config_keys = [
     "162exe235948e37ws6d057d9d85324e2", "dyv35182!", "dyv35224nossas!!",
     "662ede816988e58fb6d057d9d85605e0", "962exe865948e37ws6d057d4d85604e0",
     "175exe868648e37wb9x157d4l45604l0", "c7-YOcjyk1k", "Wasjdeijs@/ÇPãoOf231#$%¨&*()_qqu&iJo>ç",
-    # Additional keys omitted for brevity
+    "Ed\x01", "fubvx788b46v", "fubgf777gf6", "cinbdf665$4", "furious0982", "error", "Jicv",
+    "mtscrypt", "62756C6F6B", "rdovx202b46v", "xcode788b46z", "y$I@no5#lKuR7ZH#eAgORu6QnAF*vP0^JOTyB1ZQ&*w^RqpGkY",
+    "kt", "fubvx788B4mev", "thirdy1996624", "bKps&92&", "waiting", "gggggg", "fuMnrztkzbQ",
+    "A^ST^f6ASG6AS5asd", "cnt", "chaveKey", "Version6", "trfre699g79r",
+    "chanika acid, gimsara htpcag!!", "xcode788b46z", "cigfhfghdf665557", "0x0",
+    "2$dOxdIb6hUpzb*Y@B0Nj!T!E2A6DOLlwQQhs4RO6QpuZVfjGx", "W0RFRkFVTFRd", "Bgw34Nmk",
+    "B1m93p$$9pZcL9yBs0b$jJwtPM5VG@Vg", "fubvx788b46vcatsn", "$$$@mfube11!!_$$))012b4u",
+    "zbNkuNCGSLivpEuep3BcNA==", "175exe867948e37wb9d057d4k45604l0"
 ]
 
 def aes_decrypt(data, key, iv):
-    cipher = AES.new(b64decode(key), AES.MODE_CBC, b64decode(iv))
-    decrypted = cipher.decrypt(b64decode(data))
-    return decrypted.rstrip(b'\x10').decode('utf-8')  # Assuming PKCS#7 padding
+    aes = AES.new(key, AES.MODE_CBC, iv)
+    decrypted_data = aes.decrypt(data)
+    return decrypted_data.decode('utf-8', errors='ignore').rstrip("\x10")
 
 def md5crypt(data):
     return md5(data.encode()).hexdigest()
 
 def decrypt_data(data, version):
+    iv = b64decode(data.split(".")[1])
     for key in config_keys:
         try:
-            encryption_key = b64encode(md5crypt(key + " " + version).encode()).decode('utf-8')
-            iv, content = data.split('.')
-            return aes_decrypt(content, encryption_key, iv)
-        except Exception as e:
-            print(f"Trying next key: {key}, Error: {e}")
-    raise ValueError("No valid key found for decryption.")
-
-def pretty_print_json(data):
-    if isinstance(data, dict):
-        return "\n".join([f"🔑 {k.lower()}: {v}" for k, v in data.items()])
-    elif isinstance(data, list):
-        return "- [" + ", ".join(map(str, data)) + "]"
-    return str(data)
+            encrypted_key = md5crypt(f"{key} {version}")
+            aes_key = b64decode(encrypted_key)
+            decrypted_data = aes_decrypt(b64decode(data.split(".")[0]), aes_key, iv)
+            return decrypted_data
+        except Exception:
+            continue
+    raise ValueError("❌ No Valid Key Found For Decryption.")
 
 def execute(sender_id, message_text):
-    # Extract encrypted input
-    parts = message_text.split(' ', 1)
-    if len(parts) < 2:
-        send_message(sender_id, {"text": "❌ Error: No encrypted content provided. Use 'sks {input_encrypted}'."})
-        return
+    input_encrypted = message_text.split(' ')[1]
     
-    input_encrypted = parts[1]
+    if not input_encrypted:
+        send_message(sender_id, {"text": "❌ Error: No encrypted content provided. Please use the command in the format 'sks {input_encrypted}'."})
+        return
+
     send_message(sender_id, {"text": "⏳ Processing your decryption request, please wait..."})
 
     try:
         config_data = json.loads(input_encrypted)
-        decrypted_content = decrypt_data(config_data['d'], config_data['v'])
-        
-        # Format the response
-        response_text = f"🎉 Decrypted Content:\n{pretty_print_json(json.loads(decrypted_content)).strip()}"
-        
-        # Send the response text
+        decrypted_data = decrypt_data(config_data['d'], config_data['v'])
+        response_text = f"🎉 Decrypted Content:\n{decrypted_data}"
+
+        # Send decrypted text result
         send_message(sender_id, {"text": response_text})
 
-        # Create a temporary file with the decrypted content
-        temp_file_path = os.path.join(os.path.dirname(__file__), "sks_decrypted_result.txt")
-        with open(temp_file_path, 'w', encoding="utf-8") as file:
-            file.write(response_text)
-        
-        # Send the file as an attachment
-        with open(temp_file_path, 'rb') as file:
-            send_message(sender_id, {
-                "attachment": {
-                    "type": "file",
-                    "payload": {
-                        "is_reusable": True
-                    }
-                },
-                "filedata": {
-                    "filename": "sks_decrypted_result.txt",
-                    "content": file.read(),
-                    "content_type": "text/plain"
+        # Write to a temporary file
+        temp_file_path = Path(__file__).parent / "sks_decrypted_result.txt"
+        with open(temp_file_path, "w", encoding="utf-8") as f:
+            f.write(response_text)
+
+        # Send file as attachment
+        send_message(sender_id, {
+            "attachment": {
+                "type": "file",
+                "payload": {
+                    "url": f"{temp_file_path}", "is_reusable": True
                 }
-            })
-        
-        # Clean up the temporary file
+            }
+        })
+
+        # Clean up temporary file
         os.remove(temp_file_path)
 
-    except Exception as error:
-        print(f"Error in execute function for {name}: {error}")
-        send_message(sender_id, {"text": f"An error occurred during decryption: {error}"})
+    except Exception as e:
+        error_message = f"An error occurred during decryption: {e}"
+        send_message(sender_id, {"text": error_message})
