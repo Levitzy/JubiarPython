@@ -1,0 +1,23 @@
+🎉 Decrypted Content:
+🔑 sshServer: gedoc.vivo.com.br
+🔑 sshPort: 443
+🔑 profileSshAuth:
+🔑 sshUser: HTTP
+🔑 sshPasswd: 12345
+🔑 proxyType: PROXY_HTTP
+🔑 proxyHttp:
+🔑 proxyIp: gedoc.vivo.com.br
+🔑 proxyPort: 80
+🔑 isCustomPayload: True
+🔑 customPayload: GET /app280637 HTTP/1.1[crlf]Host: firezfalcon.nxtgen.pp.ua[crlf]Upgrade: Websocket[crlf][crlf]
+🔑 proxySsl:
+🔑 hostSni: firezfalcon.nxtgen.pp.ua
+🔑 versionSSl: auto
+🔑 isSSLCustomPayload: True
+🔑 customPayloadSSL: GET /app280637 HTTP/1.1[crlf]Host: firezfalcon.nxtgen.pp.ua[crlf]Upgrade: Websocket[crlf][crlf]
+🔑 proxyDirect:
+🔑 isCustomPayload: True
+🔑 customPayload: GET /app280637 HTTP/1.1[crlf]Host: firezfalcon.nxtgen.pp.ua[crlf]Upgrade: Websocket[crlf][crlf]
+🔑 dnsCustom: [1.1.1.1, 1.0.0.1]
+🔑 configProtect:
+🔑 blockConfig: True
