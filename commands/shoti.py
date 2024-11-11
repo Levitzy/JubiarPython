@@ -30,13 +30,18 @@ def execute(sender_id, message_text):
                         for chunk in r.iter_content(chunk_size=8192):
                             f.write(chunk)
 
-                # Send the video attachment
+                # Send the video as an attachment from the local file
                 send_message(sender_id, {
                     "attachment": {
-                        "type": "video",
+                        "type": "file",
                         "payload": {
-                            "url": video_url,
+                            "url": temp_file_path,  # Adjusting to send the local file path
                             "is_reusable": True
+                        },
+                        "filedata": {
+                            "filename": "shoti.mp4",
+                            "content": open(temp_file_path, "rb"),
+                            "content_type": "video/mp4"
                         }
                     }
                 })
@@ -56,3 +61,8 @@ def execute(sender_id, message_text):
             # Error handling for request issues
             print("Error fetching, downloading, or sending the video:", e)
             send_message(sender_id, {"text": "An error occurred while fetching the video. Please try again later."})
+
+        except Exception as e:
+            # General exception handling
+            print("Error:", e)
+            send_message(sender_id, {"text": "An unexpected error occurred. Please try again later."})
