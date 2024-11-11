@@ -7,7 +7,7 @@ from base64 import b64decode, b64encode
 # Command details
 name = "sks"
 description = "Decrypts user-provided encrypted JSON content directly from input and sends the decrypted message."
-admin_bot = False
+admin_bot = True
 
 # Configuration keys
 config_keys = [
