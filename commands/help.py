@@ -2,7 +2,7 @@ import os
 from api.sendMessage import send_message
 
 name = "help"
-description = "Lists all available commands with admin privileges indication."
+description = "Lists all available commands with a modern design and admin indication."
 admin_bot = False  # Doesn't require admin privileges
 
 def execute(sender_id, message_text):
@@ -19,21 +19,26 @@ def execute(sender_id, message_text):
             command_name = command_file.replace('.py', '')
             # Dynamically import each command module to check admin privileges
             module = __import__(f"commands.{command_name}", fromlist=["admin_bot"])
-            admin_status = "Admin Only" if getattr(module, "admin_bot", False) else "User Accessible"
-            command_list.append(f"- {command_name} ({admin_status})")
+            admin_status = "🔒 Admin Only" if getattr(module, "admin_bot", False) else "🔓 User Accessible"
+            command_list.append(f"• **{command_name.capitalize()}** - {admin_status}")
 
-        # Join the list into a formatted message
-        response_text = "Here are the available commands:\n" + "\n".join(command_list)
+        # Join the list into a formatted, styled message
+        response_text = (
+            "🌐 **Available Commands** 🌐\n"
+            "Here’s a list of commands you can use:\n\n" + 
+            "\n".join(command_list) +
+            "\n\nUse these commands to interact with the bot. Commands marked with 🔒 require admin privileges."
+        )
         
         # Send the message
         send_message(sender_id, {"text": response_text})
     
     except FileNotFoundError:
         # Handle the case where the commands folder is missing
-        error_text = "Error: Commands folder not found."
+        error_text = "🚫 Error: Commands folder not found."
         send_message(sender_id, {"text": error_text})
 
     except Exception as e:
         # Catch other potential errors
-        error_text = f"An error occurred: {str(e)}"
+        error_text = f"⚠️ An error occurred: {str(e)}"
         send_message(sender_id, {"text": error_text})
