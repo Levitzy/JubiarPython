@@ -1,4 +1,4 @@
-flask
+flask[async]
 requests
 requests_toolbelt
 pycryptodome
