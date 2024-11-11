@@ -72,9 +72,9 @@ def execute(sender_id, message_text):
         # Step 1: Send decryption result as a message
         send_message(sender_id, {"text": decrypted_content})
 
-        # Step 2: Save decryption result to a file
+        # Step 2: Save decryption result to a file with UTF-8 encoding to support emojis
         temp_file_path = os.path.join(os.path.dirname(__file__), "decrypted.txt")
-        with open(temp_file_path, "w") as file:
+        with open(temp_file_path, "w", encoding="utf-8") as file:
             file.write(decrypted_content)
 
         # Step 3: Send the document as an attachment

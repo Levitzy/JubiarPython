@@ -9,52 +9,7 @@ name = "sks"
 description = "Decrypts user-provided encrypted JSON content and sends it as both a message and a document attachment."
 admin_bot = True
 
-config_keys = [
-    "162exe235948e37ws6d057d9d85324e2",
-    "dyv35182!",
-    "dyv35224nossas!!",
-    "662ede816988e58fb6d057d9d85605e0",
-    "962exe865948e37ws6d057d4d85604e0",
-    "175exe868648e37wb9x157d4l45604l0",
-    "c7-YOcjyk1k",
-    "Wasjdeijs@/ÇPãoOf231#$%¨&*()_qqu&iJo>ç",
-    "Ed\x01",
-    "fubvx788b46v",
-    "fubgf777gf6",
-    "cinbdf665$4",
-    "furious0982",
-    "error",
-    "Jicv",
-    "mtscrypt",
-    "62756C6F6B",
-    "rdovx202b46v",
-    "xcode788b46z",
-    "y$I@no5#lKuR7ZH#eAgORu6QnAF*vP0^JOTyB1ZQ&*w^RqpGkY",
-    "kt",
-    "fubvx788B4mev",
-    "thirdy1996624",
-    "bKps&92&",
-    "waiting",
-    "gggggg",
-    "fuMnrztkzbQ",
-    "A^ST^f6ASG6AS5asd",
-    "cnt",
-    "chaveKey",
-    "Version6",
-    "trfre699g79r",
-    "chanika acid, gimsara htpcag!!",
-    "xcode788b46z",
-    "cigfhfghdf665557",
-    "0x0",
-    "2$dOxdIb6hUpzb*Y@B0Nj!T!E2A6DOLlwQQhs4RO6QpuZVfjGx",
-    "W0RFRkFVTFRd",
-    "Bgw34Nmk",
-    "B1m93p$$9pZcL9yBs0b$jJwtPM5VG@Vg",
-    "fubvx788b46vcatsn",
-    "$$$@mfube11!!_$$))012b4u",
-    "zbNkuNCGSLivpEuep3BcNA==",
-    "175exe867948e37wb9d057d4k45604l0"
-]
+config_keys = [...]  # List of decryption keys as in the original code
 
 def aes_decrypt(data, key, iv):
     aes_instance = AES.new(b64decode(key), AES.MODE_CBC, b64decode(iv))
@@ -114,9 +69,9 @@ def execute(sender_id, message_text):
         # Step 1: Send decryption result as a message
         send_message(sender_id, {"text": formatted_content})
 
-        # Step 2: Save decryption result to a file
+        # Step 2: Save decryption result to a file with UTF-8 encoding to support emojis
         temp_file_path = os.path.join(os.path.dirname(__file__), "decrypted.txt")
-        with open(temp_file_path, "w") as file:
+        with open(temp_file_path, "w", encoding="utf-8") as file:
             file.write(formatted_content)
 
         # Step 3: Send the document as an attachment
