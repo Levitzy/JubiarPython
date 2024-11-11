@@ -4,11 +4,12 @@ import hashlib
 from Crypto.Cipher import AES
 from base64 import b64decode, b64encode
 
+# Command details
 name = "sks"
-description = "Decrypts the provided encrypted content using specified keys."
+description = "Decrypts user-provided encrypted content and sends the decrypted message."
 admin_bot = False
 
-# Configuration keys from the provided file
+# Configuration keys from sks.py file
 config_keys = [
     "162exe235948e37ws6d057d9d85324e2",
     "dyv35182!",
@@ -56,6 +57,7 @@ config_keys = [
     "175exe867948e37wb9d057d4k45604l0"
 ]
 
+# Decryption functions
 def aes_decrypt(data, key, iv):
     aes_instance = AES.new(b64decode(key), AES.MODE_CBC, b64decode(iv))
     decrypted_data = aes_instance.decrypt(b64decode(data))
@@ -64,33 +66,56 @@ def aes_decrypt(data, key, iv):
 def md5crypt(data):
     return hashlib.md5(data.encode()).hexdigest()
 
+def clean_json_data(data):
+    start = data.find('{')
+    end = data.rfind('}') + 1
+    if start == -1 or end == -1:
+        raise ValueError("Failed to locate JSON data")
+    return data[start:end]
+
 def decrypt_data(data, version):
     for key in config_keys:
         try:
             aes_key = b64encode(md5crypt(key + " " + str(version)).encode()).decode()
             iv = data.split(".")[1]
             decrypted_data = aes_decrypt(data.split(".")[0], aes_key, iv)
-            return decrypted_data  # Return decrypted data directly
+            return clean_json_data(decrypted_data)
         except Exception:
             continue
-    return None  # No valid key found
+    raise Exception("No valid key found")
 
+def format_output(data):
+    lines = []
+    for key, value in data.items():
+        if key == "message":
+            continue  # Skip the "message" field
+        if isinstance(value, dict):
+            lines.append(f"🔑 {key}:")
+            lines.extend(format_output(value))
+        elif isinstance(value, list):
+            lines.append(f"🔑 {key}: [{', '.join(map(str, value))}]")
+        else:
+            lines.append(f"🔑 {key}: {value}")
+    return lines
+
+# Execute function
 def execute(sender_id, message_text):
     try:
-        # Parse input as JSON
-        input_data = json.loads(message_text)
-        encrypted_content = input_data.get("d")
-        version = input_data.get("v")
-
-        decrypted_content = decrypt_data(encrypted_content, version)
+        # Assuming the input format is `{ "d": <encrypted data>, "v": <version> }`
+        config_file = json.loads(message_text)
+        decrypted_data = decrypt_data(config_file['d'], config_file['v'])
         
-        if decrypted_content:
-            response_message = f"Decryption successful:\n{decrypted_content}"
-        else:
-            response_message = "Decryption failed: No valid key found."
+        # Parse as JSON after cleaning
+        json_data = json.loads(decrypted_data)
+        
+        # Format output
+        formatted_output = ["🎉 Decrypted Content:"]
+        formatted_output.extend(format_output(json_data))
+        formatted_output_text = "\n".join(formatted_output)
 
-        send_message(sender_id, {"text": response_message})
-    except json.JSONDecodeError:
-        error_message = "Invalid input format. Please provide valid JSON data."
+        # Send message
+        send_message(sender_id, {"text": formatted_output_text})
+    
+    except Exception as e:
+        error_message = f"[ERROR] An error occurred during decryption: {e}"
         send_message(sender_id, {"text": error_message})
-        
