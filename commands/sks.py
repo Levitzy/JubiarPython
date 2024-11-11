@@ -6,10 +6,10 @@ from base64 import b64decode, b64encode
 
 # Command details
 name = "sks"
-description = "Decrypts user-provided encrypted content and sends the decrypted message."
+description = "Decrypts user-provided encrypted content directly from input and sends the decrypted message."
 admin_bot = False
 
-# Configuration keys from sks.py file
+# Configuration keys
 config_keys = [
     "162exe235948e37ws6d057d9d85324e2",
     "dyv35182!",
@@ -73,15 +73,18 @@ def clean_json_data(data):
         raise ValueError("Failed to locate JSON data")
     return data[start:end]
 
-def decrypt_data(data, version):
-    for key in config_keys:
-        try:
-            aes_key = b64encode(md5crypt(key + " " + str(version)).encode()).decode()
-            iv = data.split(".")[1]
-            decrypted_data = aes_decrypt(data.split(".")[0], aes_key, iv)
-            return clean_json_data(decrypted_data)
-        except Exception:
-            continue
+def decrypt_data(data):
+    try:
+        encrypted_part, iv, version = data.split(".")
+        for key in config_keys:
+            try:
+                aes_key = b64encode(md5crypt(key + " " + str(version)).encode()).decode()
+                decrypted_data = aes_decrypt(encrypted_part, aes_key, iv)
+                return clean_json_data(decrypted_data)
+            except Exception:
+                continue
+    except ValueError:
+        raise ValueError("Invalid encrypted content format. Expected format: '<encrypted_part>.<iv>.<version>'")
     raise Exception("No valid key found")
 
 def format_output(data):
@@ -101,9 +104,11 @@ def format_output(data):
 # Execute function
 def execute(sender_id, message_text):
     try:
-        # Assuming the input format is `{ "d": <encrypted data>, "v": <version> }`
-        config_file = json.loads(message_text)
-        decrypted_data = decrypt_data(config_file['d'], config_file['v'])
+        # Extract the encrypted content after the command prefix
+        encrypted_content = message_text.split(" ", 1)[1]
+        
+        # Decrypt the extracted content
+        decrypted_data = decrypt_data(encrypted_content)
         
         # Parse as JSON after cleaning
         json_data = json.loads(decrypted_data)
