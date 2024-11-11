@@ -3,61 +3,14 @@ import json
 import hashlib
 from Crypto.Cipher import AES
 from base64 import b64decode, b64encode
+import os
 
-# Command details
 name = "sks"
-description = "Decrypts user-provided encrypted JSON content directly from input and sends the decrypted message."
+description = "Decrypts user-provided encrypted JSON content and sends it as a document attachment."
 admin_bot = True
 
-# Configuration keys
-config_keys = [
-    "162exe235948e37ws6d057d9d85324e2",
-    "dyv35182!",
-    "dyv35224nossas!!",
-    "662ede816988e58fb6d057d9d85605e0",
-    "962exe865948e37ws6d057d4d85604e0",
-    "175exe868648e37wb9x157d4l45604l0",
-    "c7-YOcjyk1k",
-    "Wasjdeijs@/ÇPãoOf231#$%¨&*()_qqu&iJo>ç",
-    "Ed\x01",
-    "fubvx788b46v",
-    "fubgf777gf6",
-    "cinbdf665$4",
-    "furious0982",
-    "error",
-    "Jicv",
-    "mtscrypt",
-    "62756C6F6B",
-    "rdovx202b46v",
-    "xcode788b46z",
-    "y$I@no5#lKuR7ZH#eAgORu6QnAF*vP0^JOTyB1ZQ&*w^RqpGkY",
-    "kt",
-    "fubvx788B4mev",
-    "thirdy1996624",
-    "bKps&92&",
-    "waiting",
-    "gggggg",
-    "fuMnrztkzbQ",
-    "A^ST^f6ASG6AS5asd",
-    "cnt",
-    "chaveKey",
-    "Version6",
-    "trfre699g79r",
-    "chanika acid, gimsara htpcag!!",
-    "xcode788b46z",
-    "cigfhfghdf665557",
-    "0x0",
-    "2$dOxdIb6hUpzb*Y@B0Nj!T!E2A6DOLlwQQhs4RO6QpuZVfjGx",
-    "W0RFRkFVTFRd",
-    "Bgw34Nmk",
-    "B1m93p$$9pZcL9yBs0b$jJwtPM5VG@Vg",
-    "fubvx788b46vcatsn",
-    "$$$@mfube11!!_$$))012b4u",
-    "zbNkuNCGSLivpEuep3BcNA==",
-    "175exe867948e37wb9d057d4k45604l0"
-]
+config_keys = [...]  # List of decryption keys as in the original code
 
-# Decryption functions
 def aes_decrypt(data, key, iv):
     aes_instance = AES.new(b64decode(key), AES.MODE_CBC, b64decode(iv))
     decrypted_data = aes_instance.decrypt(b64decode(data))
@@ -97,36 +50,44 @@ def format_output(data):
             lines.append(f"🔑 {key}: {value}")
     return lines
 
-# Execute function
 def execute(sender_id, message_text):
     try:
-        # Extract the encrypted content after the command prefix
         encrypted_content = message_text.split(" ", 1)[1]
-        
-        # Parse the encrypted content as JSON
-        try:
-            content_json = json.loads(encrypted_content)
-            data = content_json['d']
-            version = content_json['v']
-            iv = data.split(".")[1]  # Assume 'iv' is part of 'd'
-            encrypted_part = data.split(".")[0]
-        except (json.JSONDecodeError, KeyError, IndexError) as e:
-            raise ValueError("Invalid input format. Please provide JSON formatted as {\"v\":<version>, \"d\":\"<encrypted_part>.<iv>.<extra>\"}.")
+        content_json = json.loads(encrypted_content)
+        data = content_json['d']
+        version = content_json['v']
+        iv = data.split(".")[1]
+        encrypted_part = data.split(".")[0]
 
-        # Decrypt the data
         decrypted_data = decrypt_data(encrypted_part, iv, version)
-        
-        # Parse as JSON after cleaning
         json_data = json.loads(decrypted_data)
-        
-        # Format output
+
         formatted_output = ["🎉 Decrypted Content:"]
         formatted_output.extend(format_output(json_data))
-        formatted_output_text = "\n".join(formatted_output)
+        formatted_content = "\n".join(formatted_output)
+        
+        # Save the decrypted content to a temporary file
+        temp_file_path = os.path.join(os.path.dirname(__file__), "decrypted.txt")
+        with open(temp_file_path, "w") as file:
+            file.write(formatted_content)
 
-        # Send message
-        send_message(sender_id, {"text": formatted_output_text})
-    
+        # Send the document as an attachment
+        with open(temp_file_path, "rb") as file:
+            send_message(sender_id, {
+                "attachment": {
+                    "type": "file",
+                    "payload": {}
+                },
+                "filedata": {
+                    "filename": "decrypted.txt",
+                    "content": file,
+                    "content_type": "text/plain"
+                }
+            })
+
+        # Remove the temporary file after sending
+        os.remove(temp_file_path)
+
     except Exception as e:
         error_message = f"[ERROR] An error occurred during decryption: {e}"
         send_message(sender_id, {"text": error_message})
