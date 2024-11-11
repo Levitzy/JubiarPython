@@ -35,7 +35,9 @@ def execute(sender_id, message_text):
                     send_message(sender_id, {
                         "attachment": {
                             "type": "video",
-                            "payload": {}
+                            "payload": {
+                                "is_reusable": True
+                            }
                         },
                         "filedata": {
                             "filename": "shoti.mp4",
