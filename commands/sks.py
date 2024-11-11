@@ -110,16 +110,13 @@ def execute(sender_id, message_text):
         formatted_output = ["🎉 Decrypted Content:"]
         formatted_output.extend(format_output(json_data))
         formatted_content = "\n".join(formatted_output)
-        
-        # Step 1: Send decryption result as a message
+
         send_message(sender_id, {"text": formatted_content})
 
-        # Step 2: Save decryption result to a file with UTF-8 encoding to support emojis
         temp_file_path = os.path.join(os.path.dirname(__file__), "decrypted.txt")
         with open(temp_file_path, "w", encoding="utf-8") as file:
             file.write(formatted_content)
 
-        # Step 3: Send the document as an attachment
         with open(temp_file_path, "rb") as file:
             send_message(sender_id, {
                 "attachment": {
@@ -133,14 +130,11 @@ def execute(sender_id, message_text):
                 }
             })
 
-        # Get file size in KB for the step 4 message
         file_size_kb = os.path.getsize(temp_file_path) / 1024
-        # Step 4: Send additional information with file size after file is sent
         send_message(sender_id, {
             "text": f"Decryption complete. Attached file 'decrypted.txt' ({file_size_kb:.2f} KB) contains the detailed results."
         })
 
-        # Remove the temporary file after sending
         os.remove(temp_file_path)
 
     except Exception as e:

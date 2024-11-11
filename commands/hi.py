@@ -2,7 +2,7 @@ from api.sendMessage import send_message
 
 name = 'hi'
 description = 'A greeting command to say hi to the user.'
-admin_bot = False  # Set to True if this command requires admin privileges
+admin_bot = False
 
 def execute(sender_id, message_text):
     if message_text.strip().lower() == name:

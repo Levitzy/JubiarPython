@@ -8,7 +8,6 @@ import glob
 app = Flask(__name__)
 VERIFY_TOKEN = "jubiar"
 
-# Dynamically load all command modules in the commands folder
 commands = {}
 for command_file in glob.glob("commands/*.py"):
     command_name = os.path.basename(command_file)[:-3]

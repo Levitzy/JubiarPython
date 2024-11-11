@@ -1,7 +1,6 @@
 import logging
 from webhook import app
 
-# Suppress Flask's request logging
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 

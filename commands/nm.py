@@ -6,7 +6,7 @@ import os
 
 name = "nm"
 description = "Decrypts the provided encrypted content and sends it as both a message and a document attachment."
-admin_bot = True  # Set to True if this command requires admin access
+admin_bot = True
 
 def decrypt_aes_ecb_128(ciphertext, key):
     cipher = AES.new(key, AES.MODE_ECB)

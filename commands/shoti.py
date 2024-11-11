@@ -4,7 +4,7 @@ from api.sendMessage import send_message
 
 name = "shoti"
 description = "Fetches a video using the Shoti API, downloads it, and sends it as a video attachment."
-admin_bot = False  # Set to True if only admins should use it
+admin_bot = False
 
 def execute(sender_id, message_text):
     if message_text.strip() == name:
