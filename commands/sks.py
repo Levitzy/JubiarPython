@@ -1,13 +1,12 @@
-import os
+from api.sendMessage import send_message
 import json
-import requests
-from hashlib import md5
 from Crypto.Cipher import AES
-from api.sendMessage import send_message  # Ensure sendMessage.py is set up as per your environment.
+import hashlib
+import base64
 
 name = "sks"
 description = "Decrypts the provided encrypted content using predefined keys."
-admin_bot = True  # Adjust if only admins should use it
+admin_bot = True
 
 config_keys = [
     "162exe235948e37ws6d057d9d85324e2",
@@ -56,36 +55,41 @@ config_keys = [
     "175exe867948e37wb9d057d4k45604l0"
 ]
 
+def aes_decrypt(data, key, iv):
+    aes_instance = AES.new(key, AES.MODE_CBC, iv)
+    decrypted = aes_instance.decrypt(base64.b64decode(data))
+    return decrypted.decode("utf-8").strip()
+
 def md5crypt(data):
-    return md5(data.encode()).hexdigest()
+    return hashlib.md5(data.encode()).hexdigest()
 
 def decrypt_data(data, version):
     for key in config_keys:
         try:
-            key_hashed = md5crypt(key + " " + version).encode("utf-8")
-            cipher = AES.new(key_hashed, AES.MODE_CBC, iv=key_hashed[:16])
-            decrypted_data = cipher.decrypt(data).decode("utf-8")
-            return json.loads(decrypted_data.strip())  # Return decrypted JSON data
-        except Exception as e:
+            hashed_key = md5crypt(key + " " + version)
+            key_bytes = base64.b64encode(hashed_key.encode())[:32]
+            iv = data.split(".")[1].encode()
+            decrypted_data = aes_decrypt(data.split(".")[0], key_bytes, iv)
+            return json.loads(decrypted_data)
+        except Exception:
             continue
-    raise ValueError("No valid decryption key found.")
+    raise ValueError("❌ No Valid Key Found For Decryption.")
 
 async def execute(sender_id, message_text):
-    # Expecting input in format: sks {encrypted_payload}
-    input_data = message_text.split(' ')[1] if len(message_text.split(' ')) > 1 else None
-    if not input_data:
-        await send_message(sender_id, {"text": "❌ Error: No encrypted content provided. Please use the format: sks {input_encrypted}."})
+    input_encrypted = message_text.split(' ', 1)[-1]
+    
+    if not input_encrypted:
+        await send_message(sender_id, {"text": "❌ Error: No encrypted content provided. Please use 'sks {input_encrypted}'."})
         return
 
-    await send_message(sender_id, {"text": "⏳ Processing decryption request..."})
+    await send_message(sender_id, {"text": "⏳ Processing your decryption request, please wait..."})
 
     try:
-        encrypted_data = json.loads(input_data)
-        decrypted_content = decrypt_data(bytes.fromhex(encrypted_data['d']), str(encrypted_data['v']))
-        decrypted_text = json.dumps(decrypted_content, indent=2)
+        config_data = json.loads(input_encrypted)
+        decrypted_content = decrypt_data(config_data["d"], str(config_data["v"]))
+        response_text = f"🎉 Decrypted Content:\n{json.dumps(decrypted_content, indent=2)}"
         
-        # Respond with decrypted data as text
-        await send_message(sender_id, {"text": f"🎉 Decrypted Content:\n{decrypted_text}"})
-
-    except Exception as error:
-        await send_message(sender_id, {"text": f"An error occurred: {str(error)}"})
+        # Send decrypted content as text
+        await send_message(sender_id, {"text": response_text})
+    except Exception as e:
+        await send_message(sender_id, {"text": f"An error occurred during decryption: {str(e)}"})
