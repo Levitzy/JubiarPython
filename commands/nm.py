@@ -5,7 +5,7 @@ from Crypto.Cipher import AES
 import os
 
 name = "nm"
-description = "Decrypts the provided encrypted content and sends it as a document attachment."
+description = "Decrypts the provided encrypted content and sends it as both a message and a document attachment."
 admin_bot = True  # Set to True if this command requires admin access
 
 def decrypt_aes_ecb_128(ciphertext, key):
@@ -17,10 +17,10 @@ def parse_config(data):
     result = []
     for key, value in data.items():
         if key.lower() == "note":
-            continue  # Skip any "note" keys
+            continue
         if isinstance(value, dict):
             for sub_key, sub_value in value.items():
-                if sub_key.lower() != "note":  # Exclude nested "note" keys
+                if sub_key.lower() != "note":
                     result.append(f"{sub_key.lower()} {sub_value}")
         elif isinstance(value, list):
             for item in value:
@@ -68,13 +68,16 @@ def execute(sender_id, message_text):
             decrypted_content = "\n".join(decrypted_message)
         else:
             decrypted_content = "Decryption yielded no content."
-        
-        # Save the decrypted content to a temporary file
+
+        # Step 1: Send decryption result as a message
+        send_message(sender_id, {"text": decrypted_content})
+
+        # Step 2: Save decryption result to a file
         temp_file_path = os.path.join(os.path.dirname(__file__), "decrypted.txt")
         with open(temp_file_path, "w") as file:
             file.write(decrypted_content)
 
-        # Send the document as an attachment
+        # Step 3: Send the document as an attachment
         with open(temp_file_path, "rb") as file:
             send_message(sender_id, {
                 "attachment": {
@@ -87,6 +90,13 @@ def execute(sender_id, message_text):
                     "content_type": "text/plain"
                 }
             })
+
+        # Get file size in KB for the step 4 message
+        file_size_kb = os.path.getsize(temp_file_path) / 1024
+        # Step 4: Send additional information with file size after file is sent
+        send_message(sender_id, {
+            "text": f"Decryption complete. Attached file 'decrypted.txt' ({file_size_kb:.2f} KB) contains the detailed results."
+        })
 
         # Remove the temporary file after sending
         os.remove(temp_file_path)
