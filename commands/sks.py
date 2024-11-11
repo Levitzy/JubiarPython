@@ -1,12 +1,10 @@
 import json
 import hashlib
-from base64 import b64decode, b64encode
 from Crypto.Cipher import AES
-from api.sendMessage import send_message
+from base64 import b64decode, b64encode
 
-name = "sks"
-description = "Decrypts the input and sends the decrypted output to the user."
-admin_bot = False
+input_file_path = "a.txt"
+output_file_path = "b.txt"
 
 # Configuration keys
 config_keys = [
@@ -56,7 +54,6 @@ config_keys = [
     "175exe867948e37wb9d057d4k45604l0"
 ]
 
-
 def aes_decrypt(data, key, iv):
     aes_instance = AES.new(b64decode(key), AES.MODE_CBC, b64decode(iv))
     decrypted_data = aes_instance.decrypt(b64decode(data))
@@ -78,9 +75,10 @@ def decrypt_data(data, version):
             aes_key = b64encode(md5crypt(key + " " + str(version)).encode()).decode()
             iv = data.split(".")[1]
             decrypted_data = aes_decrypt(data.split(".")[0], aes_key, iv)
+            print(f"Successful decryption using key: {key}")
             return clean_json_data(decrypted_data)
-        except Exception:
-            continue
+        except Exception as e:
+            print(f"Trying next key: {key}")
     raise Exception("No valid key found")
 
 def format_output(data):
@@ -97,22 +95,26 @@ def format_output(data):
             lines.append(f"🔑 {key}: {value}")
     return lines
 
-def execute(sender_id, message_text):
-    try:
-        input_data = json.loads(message_text)  # Parse the input as JSON
-        encrypted_data = input_data['d']
-        version = input_data['v']
-        
-        decrypted_data = decrypt_data(encrypted_data, version)
-        json_data = json.loads(decrypted_data)  # Parse decrypted data
-        
-        formatted_output = ["🎉 Decrypted Content:"]
-        formatted_output.extend(format_output(json_data))
-        formatted_output_text = "\n".join(formatted_output)
-        
-        # Send formatted output to the user
-        send_message(sender_id, {"text": formatted_output_text})
-    except Exception as e:
-        error_message = f"[ERROR] An error occurred during decryption: {e}"
-        send_message(sender_id, {"text": error_message})
-        
+try:
+    with open(input_file_path, 'r') as f:
+        config_file = json.load(f)
+    
+    decrypted_data = decrypt_data(config_file['d'], config_file['v'])
+    
+    # Parse as JSON after cleaning
+    json_data = json.loads(decrypted_data)
+    
+    # Format output
+    formatted_output = ["🎉 Decrypted Content:"]
+    formatted_output.extend(format_output(json_data))
+    formatted_output_text = "\n".join(formatted_output)
+    
+    # Write to file and display
+    with open(output_file_path, 'w') as f:
+        f.write(formatted_output_text)
+    
+    print(formatted_output_text)
+    print(f"Formatted data saved to {output_file_path}")
+
+except Exception as e:
+    print(f"[ERROR] An error occurred during decryption: {e}")
