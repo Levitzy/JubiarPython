@@ -73,7 +73,8 @@ def decrypt_data(data, version):
             )
             return {"decrypted_data": decrypted_data}
         except Exception as e:
-            print(f"Trying next key: {key}")
+            # Removed print statement here
+            pass  # You can add logging or other handling if needed
     raise ValueError("No valid key found for decryption.")
 
 def pretty_print_json(data):
