@@ -23,30 +23,28 @@ def execute(sender_id, message_text):
                 tiktok_url = response_data["tiktokUrl"]
                 temp_file_path = os.path.join(os.path.dirname(__file__), "shoti.mp4")
 
-                # Download and save the video
+                # Download and save the video locally
                 with requests.get(video_url, stream=True) as r:
                     r.raise_for_status()
                     with open(temp_file_path, "wb") as f:
                         for chunk in r.iter_content(chunk_size=8192):
                             f.write(chunk)
 
-                # Send the video as an attachment from the local file
-                send_message(sender_id, {
-                    "attachment": {
-                        "type": "file",
-                        "payload": {
-                            "url": temp_file_path,  # Adjusting to send the local file path
-                            "is_reusable": True
+                # Send the video as an attachment
+                with open(temp_file_path, "rb") as video_file:
+                    send_message(sender_id, {
+                        "attachment": {
+                            "type": "video",
+                            "payload": {}
                         },
                         "filedata": {
                             "filename": "shoti.mp4",
-                            "content": open(temp_file_path, "rb"),
+                            "content": video_file,
                             "content_type": "video/mp4"
                         }
-                    }
-                })
+                    })
 
-                # Send formatted message with title and credits
+                # Send the video title and TikTok URL after the video is sent
                 send_message(sender_id, {
                     "text": f"{video_title}\n\n{tiktok_url}\n\nCredits: Kenlie"
                 })
