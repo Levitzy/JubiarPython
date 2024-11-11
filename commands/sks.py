@@ -75,14 +75,14 @@ def decrypt_data(data, version):
             continue
     raise ValueError("❌ No Valid Key Found For Decryption.")
 
-async def execute(sender_id, message_text):
+def execute(sender_id, message_text):
     input_encrypted = message_text.split(' ', 1)[-1]
     
     if not input_encrypted:
-        await send_message(sender_id, {"text": "❌ Error: No encrypted content provided. Please use 'sks {input_encrypted}'."})
+        send_message(sender_id, {"text": "❌ Error: No encrypted content provided. Please use 'sks {input_encrypted}'."})
         return
 
-    await send_message(sender_id, {"text": "⏳ Processing your decryption request, please wait..."})
+    send_message(sender_id, {"text": "⏳ Processing your decryption request, please wait..."})
 
     try:
         config_data = json.loads(input_encrypted)
@@ -90,6 +90,6 @@ async def execute(sender_id, message_text):
         response_text = f"🎉 Decrypted Content:\n{json.dumps(decrypted_content, indent=2)}"
         
         # Send decrypted content as text
-        await send_message(sender_id, {"text": response_text})
+        send_message(sender_id, {"text": response_text})
     except Exception as e:
-        await send_message(sender_id, {"text": f"An error occurred during decryption: {str(e)}"})
+        send_message(sender_id, {"text": f"An error occurred during decryption: {str(e)}"})
