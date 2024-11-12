@@ -10,6 +10,11 @@ def execute(sender_id, message_text):
     # Extract user input by removing the command prefix "cllama"
     user_input = message_text.replace("cllama", "", 1).strip()
     
+    # Check if user provided input
+    if not user_input:
+        send_message(sender_id, {"text": "Please provide a question after the 'cllama' command."})
+        return
+    
     # Call the API with the extracted user input
     api_url = f"https://api.kenliejugarap.com/prefind/?question={user_input}"
     try:
@@ -20,8 +25,11 @@ def execute(sender_id, message_text):
         data = response.json().get('response', '')
         
         # Clean markdown symbols from the response
-        cleaned_data = re.sub(r'[\*\_`]', '', data)
+        cleaned_data = re.sub(r'[\*\_`>|]', '', data)
         
+        # Remove any trailing or leading ```
+        cleaned_data = re.sub(r'(^```|```$)', '', cleaned_data)
+
         # Send the cleaned response to the user
         send_message(sender_id, {"text": cleaned_data})
     
