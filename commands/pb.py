@@ -9,7 +9,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 name = "pb"
 description = "Decrypts user-provided encrypted content and sends both a message and file attachment."
-admin_bot = False
+admin_bot = True
 
 # Decode Base64
 def b64decode(content):
