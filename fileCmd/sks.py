@@ -5,6 +5,7 @@ from Crypto.Cipher import AES
 from api.sendMessage import send_message
 import os
 import requests
+from base64 import b64decode, b64encode  # Import both b64decode and b64encode
 
 # Full list of encryption keys
 config_keys = [
