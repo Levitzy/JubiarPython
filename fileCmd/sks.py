@@ -3,6 +3,7 @@ import json
 import hashlib
 from Crypto.Cipher import AES
 from api.sendMessage import send_message
+from api.downloadFile import download_file_content
 import os
 import requests
 from base64 import b64decode, b64encode  # Import both b64decode and b64encode
@@ -147,12 +148,3 @@ def handle_file(sender_id, file_url):
     except Exception as e:
         error_message = f"[ERROR] An error occurred during decryption: {e}"
         send_message(sender_id, {"text": error_message})
-
-def download_file_content(url):
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        return response.content.decode('utf-8')
-    except requests.RequestException as e:
-        print(f"Failed to download file content: {e}")
-        return None

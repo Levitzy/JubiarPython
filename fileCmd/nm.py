@@ -1,6 +1,7 @@
 import base64
 from Crypto.Cipher import AES
 from api.sendMessage import send_message
+from api.downloadFile import download_file_content
 import requests
 import json
 import os
@@ -85,13 +86,4 @@ def handle_file(sender_id, file_url):
         os.remove(temp_file_path)
 
     except Exception as e:
-        send_message(sender_id, {"text": f"Error during decryption: {str(e)}"})
-
-def download_file_content(url):
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        return response.content
-    except requests.RequestException as e:
-        print(f"Failed to download file content: {e}")
-        return None
+        send_message(sender_id, {"text": f"Error during decryption: {str(e)}"});

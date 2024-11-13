@@ -71,7 +71,7 @@ def webhook():
                     for attachment in event['message']['attachments']:
                         if attachment['type'] == 'file':
                             if not is_admin(sender_id):
-                                send_message(sender_id, {"text": "⚠️ You do not have permission to use this file handler."})
+                                send_message(sender_id, {"text": "⚠️ You do not have permission to use this file handler"})
                                 continue
                             
                             file_url = attachment['payload']['url']
