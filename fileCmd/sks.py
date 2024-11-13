@@ -7,6 +7,8 @@ import os
 import requests
 from base64 import b64decode, b64encode  # Import both b64decode and b64encode
 
+admin_bot = True
+
 # Full list of encryption keys
 config_keys = [
     "162exe235948e37ws6d057d9d85324e2",

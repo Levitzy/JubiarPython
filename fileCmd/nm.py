@@ -5,6 +5,8 @@ import requests
 import json
 import os
 
+admin_bot = True
+
 # Constants
 DECRYPTION_KEY = base64.b64decode("X25ldHN5bmFfbmV0bW9kXw==")  # Replace with your decryption key
 

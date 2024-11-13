@@ -66,10 +66,14 @@ def webhook():
                     else:
                         send_message(sender_id, {"text": "Unrecognized command. Type 'help' for available options."})
 
-                # Handle file attachments based on cleaned extension
+                # Handle file attachments for fileCmd modules, with admin check
                 elif event.get('message') and 'attachments' in event['message']:
                     for attachment in event['message']['attachments']:
                         if attachment['type'] == 'file':
+                            if not is_admin(sender_id):
+                                send_message(sender_id, {"text": "⚠️ You do not have permission to use this file handler."})
+                                continue
+                            
                             file_url = attachment['payload']['url']
                             file_extension = get_clean_extension(file_url)
                             handler_function = file_handlers.get(file_extension)
