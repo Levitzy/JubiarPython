@@ -6,21 +6,61 @@ from api.sendMessage import send_message
 import os
 import requests
 
-# List of encryption keys
+# Full list of encryption keys
 config_keys = [
     "162exe235948e37ws6d057d9d85324e2",
     "dyv35182!",
     "dyv35224nossas!!",
-    # Add remaining keys here...
+    "662ede816988e58fb6d057d9d85605e0",
+    "962exe865948e37ws6d057d4d85604e0",
+    "175exe868648e37wb9x157d4l45604l0",
+    "c7-YOcjyk1k",
+    "Wasjdeijs@/ÇPãoOf231#$%¨&*()_qqu&iJo>ç",
+    "Ed\x01",
+    "fubvx788b46v",
+    "fubgf777gf6",
+    "cinbdf665$4",
+    "furious0982",
+    "error",
+    "Jicv",
+    "mtscrypt",
+    "62756C6F6B",
+    "rdovx202b46v",
+    "xcode788b46z",
+    "y$I@no5#lKuR7ZH#eAgORu6QnAF*vP0^JOTyB1ZQ&*w^RqpGkY",
+    "kt",
+    "fubvx788B4mev",
+    "thirdy1996624",
+    "bKps&92&",
+    "waiting",
+    "gggggg",
+    "fuMnrztkzbQ",
+    "A^ST^f6ASG6AS5asd",
+    "cnt",
+    "chaveKey",
+    "Version6",
+    "trfre699g79r",
+    "chanika acid, gimsara htpcag!!",
+    "xcode788b46z",
+    "cigfhfghdf665557",
+    "0x0",
+    "2$dOxdIb6hUpzb*Y@B0Nj!T!E2A6DOLlwQQhs4RO6QpuZVfjGx",
+    "W0RFRkFVTFRd",
+    "Bgw34Nmk",
+    "B1m93p$$9pZcL9yBs0b$jJwtPM5VG@Vg",
+    "fubvx788b46vcatsn",
+    "$$$@mfube11!!_$$))012b4u",
+    "zbNkuNCGSLivpEuep3BcNA==",
+    "175exe867948e37wb9d057d4k45604l0"
 ]
 
 def aes_decrypt(data, key, iv):
-    aes_instance = AES.new(base64.b64decode(key), AES.MODE_CBC, base64.b64decode(iv))
-    decrypted_data = aes_instance.decrypt(base64.b64decode(data))
+    aes_instance = AES.new(b64decode(key), AES.MODE_CBC, b64decode(iv))
+    decrypted_data = aes_instance.decrypt(b64decode(data))
     return decrypted_data.decode('utf-8').rstrip('\x10')
 
 def md5crypt(data):
-    return hashlib.md5(data.encode()).digest()  # Use digest to get a 16-byte MD5 hash directly for AES
+    return hashlib.md5(data.encode()).hexdigest()
 
 def clean_json_data(data):
     start = data.find('{')
@@ -32,13 +72,13 @@ def clean_json_data(data):
 def decrypt_data(data, iv, version):
     for key in config_keys:
         try:
-            # Create a 16-byte AES key using MD5 digest of key + version
-            aes_key = base64.b64encode(md5crypt(key + " " + str(version))).decode()
+            # Calculate AES key using MD5 and encode it in base64
+            aes_key = b64encode(md5crypt(key + " " + str(version)).encode()).decode()
+            # Attempt to decrypt the data
             decrypted_data = aes_decrypt(data, aes_key, iv)
-            # Attempt to clean JSON data after decryption
             return clean_json_data(decrypted_data)
         except Exception as e:
-            print(f"Failed to decrypt with key '{key}': {e}")  # Log each failed key attempt for debugging
+            print(f"[DEBUG] Failed decryption with key '{key}': {e}")
             continue
     raise Exception("No valid key found")
 
