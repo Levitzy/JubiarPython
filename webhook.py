@@ -4,6 +4,7 @@ from api.adminCheck import is_admin
 import os
 import importlib
 import glob
+import re
 
 app = Flask(__name__)
 VERIFY_TOKEN = "jubiar"
@@ -25,6 +26,12 @@ for handler_file in glob.glob("fileCmd/*.py"):
     # Register the handler for the specific file extension if handle_file function exists
     if hasattr(handler_module, 'handle_file'):
         file_handlers[file_extension] = handler_module.handle_file
+
+def get_clean_extension(url):
+    # Remove any query parameters
+    clean_url = url.split('?')[0]
+    # Extract and return the file extension
+    return os.path.splitext(clean_url)[-1].lower()
 
 @app.route('/')
 def index():
@@ -59,12 +66,12 @@ def webhook():
                     else:
                         send_message(sender_id, {"text": "Unrecognized command. Type 'help' for available options."})
 
-                # Handle file attachments based on extension
+                # Handle file attachments based on cleaned extension
                 elif event.get('message') and 'attachments' in event['message']:
                     for attachment in event['message']['attachments']:
                         if attachment['type'] == 'file':
                             file_url = attachment['payload']['url']
-                            file_extension = os.path.splitext(file_url)[-1].lower()
+                            file_extension = get_clean_extension(file_url)
                             handler_function = file_handlers.get(file_extension)
                             
                             if handler_function:
