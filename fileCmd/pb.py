@@ -10,9 +10,10 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 # File handler name for .pb files
 def handle_file(sender_id, file_url):
-    # Download and decode the file content
+    # Download the file content
     try:
-        encrypted_content = download_file_content(file_url).decode('utf-8')
+        # Directly use the downloaded content as a string
+        encrypted_content = download_file_content(file_url)
         decrypted_message = decrypt(encrypted_content)
 
         # Send the decrypted result as a message
