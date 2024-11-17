@@ -1,4 +1,4 @@
-from sendMessage import send_message
+from api.sendMessage import send_message
 import time
 import subprocess
 import threading
