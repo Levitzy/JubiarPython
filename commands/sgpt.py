@@ -14,32 +14,28 @@ def execute(sender_id, message_text):
     if not user_input:
         send_message(sender_id, {"text": "Please provide a question after the 'sgpt' command."})
         return
-    
+
     # Call the API with the extracted user input
     api_url = f"https://api.kenliejugarap.com/searchgpt/?question={user_input}"
     try:
+        # Fetch and validate response
         response = requests.get(api_url)
         response.raise_for_status()
-        
-        # Extract response data
-        response_data = response.json()
-        content = response_data.get('choices', [{}])[0].get('message', {}).get('content', "No response available.")
-        
-        # Clean markdown symbols from the response
-        cleaned_data = re.sub(r'[\*\_`>|]', '', content)
-        
-        # Remove any trailing or leading ```
-        cleaned_data = re.sub(r'(^```|```$)', '', cleaned_data)
+        api_data = response.json()
 
-        # Ensure non-empty response before sending
-        if not cleaned_data.strip():
-            cleaned_data = "The API returned an empty response. Please try again."
+        # Extract and clean the response content
+        data_content = api_data.get("choices", [{}])[0].get("message", {}).get("content", "")
+        cleaned_data = re.sub(r'[\*\_`>|]', '', data_content)  # Remove markdown symbols
+        cleaned_data = re.sub(r'(^```|```$)', '', cleaned_data)  # Remove code block symbols
 
         # Send the cleaned response to the user
-        send_message(sender_id, {"text": cleaned_data})
-    
+        if cleaned_data:
+            send_message(sender_id, {"text": cleaned_data})
+        else:
+            send_message(sender_id, {"text": "The API did not return any meaningful content."})
+
     except requests.exceptions.RequestException as e:
-        error_message = f"Error fetching data: {e}"
-        send_message(sender_id, {"text": error_message})
-    except ValueError:
-        send_message(sender_id, {"text": "Error parsing API response. Please contact support."})
+        send_message(sender_id, {"text": f"Error fetching data from API: {str(e)}"})
+
+    except ValueError as e:
+        send_message(sender_id, {"text": f"Error processing API response: {str(e)}"})
