@@ -22,7 +22,7 @@ def execute(sender_id, message_text):
         response.raise_for_status()
         
         # Extract response data
-        data = response.json().get('response', '')
+        data = response.json().get('content', '')
         
         # Clean markdown symbols from the response
         cleaned_data = re.sub(r'[\*\_`>|]', '', data)
