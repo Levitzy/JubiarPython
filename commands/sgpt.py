@@ -22,13 +22,18 @@ def execute(sender_id, message_text):
         response.raise_for_status()
         
         # Extract response data
-        data = response.json().get('content', '')
+        response_data = response.json()
+        content = response_data.get('choices', [{}])[0].get('message', {}).get('content', "No response available.")
         
         # Clean markdown symbols from the response
-        cleaned_data = re.sub(r'[\*\_`>|]', '', data)
+        cleaned_data = re.sub(r'[\*\_`>|]', '', content)
         
         # Remove any trailing or leading ```
         cleaned_data = re.sub(r'(^```|```$)', '', cleaned_data)
+
+        # Ensure non-empty response before sending
+        if not cleaned_data.strip():
+            cleaned_data = "The API returned an empty response. Please try again."
 
         # Send the cleaned response to the user
         send_message(sender_id, {"text": cleaned_data})
@@ -36,3 +41,5 @@ def execute(sender_id, message_text):
     except requests.exceptions.RequestException as e:
         error_message = f"Error fetching data: {e}"
         send_message(sender_id, {"text": error_message})
+    except ValueError:
+        send_message(sender_id, {"text": "Error parsing API response. Please contact support."})
