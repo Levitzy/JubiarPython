@@ -41,7 +41,12 @@ def execute(sender_id, message_text):
         if api_response.get("status") in [True, "success"]:
             # Remove promotion from the response
             response_message = api_response.get("response", "Message sent successfully.")
-            send_message(sender_id, {"text": f"SMS sent successfully to {number}.\n{response_message}"})
+            send_message(
+                sender_id,
+                {
+                    "text": f"SMS sent successfully to {number}.\n{response_message}\n\nNote: The recipient may receive a disclaimer appended to your message."
+                },
+            )
         else:
             # Handle API-reported errors
             error_msg = api_response.get("message", "Unknown error")
