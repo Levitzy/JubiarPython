@@ -35,10 +35,10 @@ def execute(sender_id, message_text):
             for chunk in video_response.iter_content(chunk_size=8192):
                 temp_file.write(chunk)
         
-        # Send the video as an attachment
+        # Send the video as an attachment of type "video"
         message = {
             "attachment": {
-                "type": "file",
+                "type": "video",
                 "payload": {}
             },
             "filedata": {
