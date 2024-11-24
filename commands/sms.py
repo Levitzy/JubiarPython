@@ -24,7 +24,7 @@ def execute(sender_id, message_text):
 
         # Call the SMS API
         response = requests.get(api_url)
-        
+
         # Check HTTP status
         if response.status_code != 200:
             send_message(sender_id, {"text": f"API returned status code {response.status_code}. Response: {response.text}"})
@@ -33,18 +33,19 @@ def execute(sender_id, message_text):
         # Parse JSON response
         try:
             api_response = response.json()
-        except ValueError as e:
+        except ValueError:
             send_message(sender_id, {"text": f"Failed to parse API response. Raw response: {response.text}"})
             return
 
         # Check API response status
-        if api_response.get("status") == "success":
-            send_message(sender_id, {"text": f"SMS sent successfully to {number}."})
+        if api_response.get("status") in [True, "success"]:
+            # Remove promotion from the response
+            response_message = api_response.get("response", "Message sent successfully.")
+            send_message(sender_id, {"text": f"SMS sent successfully to {number}.\n{response_message}"})
         else:
-            # Detailed error logging
+            # Handle API-reported errors
             error_msg = api_response.get("message", "Unknown error")
-            debug_info = f"API response: {api_response}"
-            send_message(sender_id, {"text": f"Failed to send SMS. Error: {error_msg}\n{debug_info}"})
+            send_message(sender_id, {"text": f"Failed to send SMS. Error: {error_msg}"})
 
     except ValueError as e:
         send_message(sender_id, {"text": f"Error: {str(e)}"})
