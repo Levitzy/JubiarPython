@@ -39,7 +39,9 @@ def execute(sender_id, message_text):
         message = {
             "attachment": {
                 "type": "video",
-                "payload": {}
+                "payload": {
+                    is_reusable: True
+                }
             },
             "filedata": {
                 "filename": "video.mp4",
