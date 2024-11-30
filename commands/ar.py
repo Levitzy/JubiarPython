@@ -68,5 +68,5 @@ def execute(sender_id, message_text):
         # Send the result to the user
         send_message(sender_id, {"text": result})
     except Exception as e:
-        # Handle errors gracefully
+       
         send_message(sender_id, {"text": f"Error: {e}"})
